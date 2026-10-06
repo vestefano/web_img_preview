@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visor de imágenes web: previsualiza tu SVG, PNG o JPG antes de publicar</title>
+<meta name="description" content="Previsualiza cómo se verá tu imagen en una web: peso, resolución, proporción y simulación en avatar, banner o miniatura. Gratis y sin subir el archivo.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Visor de imágenes web">
+<link rel="canonical" href="https://vestefano.github.io/web_img_preview/">
+<meta name="theme-color" content="#0a0e15">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="styles.css">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Visor de imágenes web">
+<meta property="og:locale" content="es_ES">
+<meta property="og:title" content="Visor de imágenes web: previsualiza tu SVG, PNG o JPG">
+<meta property="og:description" content="Comprueba el peso, la resolución y el aspecto real de tu imagen en una página web, en distintos contextos y sin subir el archivo.">
+<meta property="og:url" content="https://vestefano.github.io/web_img_preview/">
+<meta property="og:image" content="https://vestefano.github.io/web_img_preview/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Vista previa de una imagen dentro de una maqueta de página web">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Visor de imágenes web: previsualiza tu SVG, PNG o JPG">
+<meta name="twitter:description" content="Comprueba el peso, la resolución y el aspecto real de tu imagen en una página web, sin subir el archivo.">
+<meta name="twitter:image" content="https://vestefano.github.io/web_img_preview/og-image.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Visor de imágenes web",
+  "alternateName": "Previsualizador de imágenes SVG, PNG y JPG",
+  "description": "Herramienta online gratuita para previsualizar cómo se verá una imagen SVG, PNG o JPG en una página web: ficha técnica con peso, resolución y proporción, veredictos sobre idoneidad, y simulación en contextos reales como avatar, miniatura, banner, tarjeta o icono.",
+  "url": "https://vestefano.github.io/web_img_preview/",
+  "image": "https://vestefano.github.io/web_img_preview/og-image.png",
+  "inLanguage": "es",
+  "applicationCategory": "DesignApplication",
+  "subApplicationCategory": "GraphicsApplication",
+  "operatingSystem": "Cualquier navegador web moderno",
+  "browserRequirements": "Requiere JavaScript y soporte de HTML5",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "featureList": "Ficha técnica de la imagen, veredictos de peso y resolución, previsualización con ancho de contenedor configurable, simulación de pantalla 1x, 2x y 3x, fondos claro, oscuro y damero, cuadrícula de píxeles, object-fit y contextos de uso (avatar, galería, banner, tarjeta, icono)",
+  "usageInfo": "El archivo se procesa únicamente en el navegador del usuario y no se transmite a ningún servidor."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "¿Qué formatos de imagen puedo comprobar?",
+      "acceptedAnswer": { "@type": "Answer", "text": "SVG, PNG y JPG / JPEG. Puedes hacer clic en la zona de carga o arrastrar el archivo directamente desde tu carpeta; si el formato no es válido la herramienta te avisa." }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Se sube mi imagen a algún servidor?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Todo el proceso ocurre en tu navegador con las APIs File, canvas y DOMParser: el archivo nunca sale de tu equipo ni se guarda en ningún sitio." }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Cómo sé si mi imagen se verá nítida en mi web?",
+      "acceptedAnswer": { "@type": "Answer", "text": "La ficha técnica compara el ancho real de la imagen con el ancho de contenedor que elijas (de 320 a 1440 px) y con la densidad de pantalla 1×, 2× o 3×. Si falta resolución te indica cuántos píxeles de ancho necesitarías." }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Qué es el viewBox de un SVG?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Es el sistema de coordenadas que define el área dibujada del vector. Sin viewBox, escalar el SVG puede recortarlo o deformarlo; con viewBox se amplía sin perder nitidez en cualquier tamaño." }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Cuánto debe pesar una imagen para la web?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Como referencia, por debajo de 50 KB carga casi instantáneamente y hasta unos 250 KB es razonable. Por encima conviene comprimir el archivo o convertirlo a WebP para no ralentizar la carga de la página." }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Puedo usarlo en el móvil o en una tablet?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sí. La interfaz es responsive, admite la selección táctil de archivos y los presets de 375 px y 768 px te dejan simular móvil y tablet directamente." }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="26" height="26"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="8.5" cy="10" r="1.9" fill="currentColor"/><path d="M3.5 17.5l4.8-5 3.4 3.4 3-2.7 5.8 5.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div class="brand-text">
+      <h1>Visor de imágenes web</h1>
+      <p>Carga un <b>SVG</b>, <b>PNG</b> o <b>JPG</b> y mira cómo se verá realmente en tu página.</p>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="layout">
+
+  <aside class="sidebar">
+
+    <section class="card">
+      <h2><span class="step">1</span> Archivo</h2>
+
+      <label class="dropzone" id="dropzone" for="fileInput">
+        <input type="file" id="fileInput" accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg">
+        <span class="dz-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </span>
+        <strong>Haz clic para elegir</strong>
+        <span class="dz-hint">o arrastra el archivo aquí</span>
+        <span class="dz-formats">SVG · PNG · JPG / JPEG</span>
+      </label>
+
+      <p class="msg msg-error" id="error" hidden></p>
+    </section>
+
+    <section class="card" id="infoCard" hidden>
+      <h2><span class="step done">2</span> Ficha técnica</h2>
+      <p class="file-name" id="fName">—</p>
+      <dl class="facts" id="facts"></dl>
+      <div class="verdicts" id="verdicts"></div>
+    </section>
+
+    <section class="card" id="controlsCard" hidden>
+      <h2><span class="step done">3</span> Ajustes de la vista</h2>
+
+      <div class="control">
+        <label for="vw">Ancho del contenedor <output id="vwOut">900 px</output></label>
+        <input type="range" id="vw" min="320" max="1440" step="10" value="900">
+        <div class="presets">
+          <button type="button" data-vw="375">Móvil 375</button>
+          <button type="button" data-vw="768">Tablet 768</button>
+          <button type="button" data-vw="1200">Escritorio 1200</button>
+        </div>
+      </div>
+
+      <div class="control">
+        <span class="ctl-label">Simular pantalla</span>
+        <div class="seg" id="zoomSeg" role="group" aria-label="Simular pantalla">
+          <button type="button" data-zoom="1" class="on">1× normal</button>
+          <button type="button" data-zoom="2">2× retina</button>
+          <button type="button" data-zoom="3">3×</button>
+        </div>
+      </div>
+
+      <div class="control">
+        <span class="ctl-label">Fondo del sitio</span>
+        <div class="seg" id="bgSeg" role="group" aria-label="Fondo del sitio">
+          <button type="button" data-bg="light" class="on">Claro</button>
+          <button type="button" data-bg="dark">Oscuro</button>
+          <button type="button" data-bg="checker">Damero</button>
+        </div>
+      </div>
+
+      <div class="control switches">
+        <label class="switch"><input type="checkbox" id="optGrid"><span class="track"></span>Cuadrícula de píxeles</label>
+        <label class="switch"><input type="checkbox" id="optBox"><span class="track"></span>Ver caja de la imagen</label>
+        <label class="switch"><input type="checkbox" id="optNatural"><span class="track"></span>Sin <code>max-width:100%</code></label>
+        <label class="switch"><input type="checkbox" id="optFit"><span class="track"></span>Ajustar al alto (<code>object-fit</code>)</label>
+      </div>
+    </section>
+
+  </aside>
+
+  <section class="stage">
+
+    <div class="stage-bar">
+      <h2>Vista previa</h2>
+      <p class="stage-note" id="stageNote">Así se verá dentro de tu página.</p>
+      <button type="button" id="resetMode" class="reset" hidden>Volver a la vista de artículo</button>
+    </div>
+
+    <div class="stage-scroll checker" id="stageScroll">
+      <div class="fit" id="fit">
+        <div class="mock" id="mock" data-theme="light">
+          <div class="mock-chrome">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="urlbar">https://misitio.com/&#8203;</span>
+          </div>
+          <div class="mock-body">
+            <nav class="mock-nav">
+              <span class="nav-logo"></span>
+              <i></i><i></i><i></i>
+            </nav>
+            <div class="mock-content">
+              <p class="mock-crumb">Inicio / Imagen</p>
+
+              <div class="figure" id="figure">
+                <figure class="frame">
+                  <div class="frame-empty" id="frameEmpty">
+                    <span>Sin imagen seleccionada</span>
+                  </div>
+                  <img id="previewImg" class="preview-img" alt="Vista previa de la imagen seleccionada" hidden>
+                  <span class="box-outline" id="boxOutline" hidden></span>
+                  <span class="pixel-grid" id="pixelGrid" hidden></span>
+                </figure>
+              </div>
+
+              <div class="fake-text">
+                <span class="l l60"></span>
+                <span class="l l100"></span>
+                <span class="l l95"></span>
+                <span class="l l70"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="contexts" id="contexts" hidden>
+      <h3>Haz clic en un uso para verlo en grande</h3>
+      <div class="context-grid">
+        <article class="ctx" data-use="avatar">
+          <header>Avatar / foto de perfil</header>
+          <div class="ctx-body center"><span data-ctx="avatar"></span></div>
+          <footer><button type="button" class="pick" data-use="avatar">Ver en la vista previa</button></footer>
+        </article>
+        <article class="ctx" data-use="thumbs">
+          <header>Miniatura de galería</header>
+          <div class="ctx-body"><div data-ctx="thumbs"></div></div>
+          <footer><button type="button" class="pick" data-use="thumbs">Ver en la vista previa</button></footer>
+        </article>
+        <article class="ctx" data-use="banner">
+          <header>Banner / cabecera</header>
+          <div class="ctx-body"><div class="banner" data-ctx="banner"></div></div>
+          <footer><button type="button" class="pick" data-use="banner">Ver en la vista previa</button></footer>
+        </article>
+        <article class="ctx" data-use="card">
+          <header>Tarjeta de artículo</header>
+          <div class="ctx-body"><div data-ctx="card"></div></div>
+          <footer><button type="button" class="pick" data-use="card">Ver en la vista previa</button></footer>
+        </article>
+        <article class="ctx" data-use="tiny">
+          <header>Icono 48 px</header>
+          <div class="ctx-body center"><span data-ctx="tiny"></span></div>
+          <footer><button type="button" class="pick" data-use="tiny">Ver en la vista previa</button></footer>
+        </article>
+        <article class="ctx" data-use="micro">
+          <header>Icono 24 px</header>
+          <div class="ctx-body center"><span data-ctx="micro"></span></div>
+          <footer><button type="button" class="pick" data-use="micro">Ver en la vista previa</button></footer>
+        </article>
+      </div>
+    </section>
+
+  </section>
+
+</div>
+
+<section class="docs">
+  <div class="docs-intro">
+    <h2>¿Por qué previsualizar una imagen antes de publicarla en la web?</h2>
+    <p>Una imagen que se ve perfecta en el explorador de archivos no siempre se ve igual dentro de una página web. Allí puede quedar <b>borrosa por falta de resolución</b>, <b>pesar demasiado</b> y frenar la carga, <b>deformarse</b> si no se respeta su proporción o pasar desapercibida si tiene fondo transparente y tu sitio usa tema oscuro.</p>
+    <p>Este <b>visor de imágenes online</b> te deja comprobarlo en segundos: carga tu archivo <b>SVG, PNG o JPG</b>, revisa la ficha técnica con peso, resolución, relación de aspecto y transparencia, y míralo dentro de una maqueta con el ancho de contenedor exacto que usará tu sitio. Nada se sube a internet: todo el proceso ocurre en tu navegador.</p>
+  </div>
+
+  <div class="doc-grid">
+    <article class="doc-card">
+      <h3>Ficha técnica y veredictos</h3>
+      <p>Peso, resolución, proporción, transparencia y, si es SVG, su viewBox con width y height. Con avisos claros cuando la imagen es demasiado pesada o no llega a la resolución mínima para 375, 768 o 1200 px.</p>
+    </article>
+    <article class="doc-card">
+      <h3>Simulación en contextos reales</h3>
+      <p>Avatar o foto de perfil, miniatura de galería, banner, tarjeta de artículo e iconos de 48 y 24 px: un clic para ver el mismo archivo en cada uso y decidir si encaja.</p>
+    </article>
+    <article class="doc-card">
+      <h3>Ajustes de la vista</h3>
+      <p>Ancho de contenedor de 320 a 1440 px con presets de móvil, tablet y escritorio, pantalla 1×, 2× y 3×, fondo claro, oscuro o damero, cuadrícula de píxeles y object-fit.</p>
+    </article>
+    <article class="doc-card">
+      <h3>Sin subir tu archivo</h3>
+      <p>La imagen se lee con las APIs File, canvas y DOMParser y se muestra con una URL blob local. Nunca viaja a un servidor ni se guarda en ningún sitio.</p>
+    </article>
+  </div>
+
+  <div class="faq">
+    <h3>Preguntas frecuentes</h3>
+
+    <details>
+      <summary>¿Qué formatos de imagen puedo comprobar?</summary>
+      <p>SVG, PNG y JPG / JPEG. Puedes hacer clic en la zona de carga o arrastrar el archivo directamente desde tu carpeta; si el formato no es válido, la herramienta te lo avisa en el momento.</p>
+    </details>
+
+    <details>
+      <summary>¿Se sube mi imagen a algún servidor?</summary>
+      <p>No. Todo el proceso ocurre en tu navegador con las APIs File, canvas y DOMParser: el archivo nunca sale de tu equipo ni se guarda en ningún sitio.</p>
+    </details>
+
+    <details>
+      <summary>¿Cómo sé si mi imagen se verá nítida en mi web?</summary>
+      <p>La ficha técnica compara el ancho real de la imagen con el ancho de contenedor que elijas (de 320 a 1440 px) y con la densidad de pantalla 1×, 2× o 3×. Si falta resolución, te indica cuántos píxeles de ancho necesitarías.</p>
+    </details>
+
+    <details>
+      <summary>¿Qué es el viewBox de un SVG?</summary>
+      <p>Es el sistema de coordenadas que define el área dibujada del vector. Sin viewBox, escalar el SVG puede recortarlo o deformarlo; con viewBox se amplía sin perder nitidez en cualquier tamaño.</p>
+    </details>
+
+    <details>
+      <summary>¿Cuánto debe pesar una imagen para la web?</summary>
+      <p>Como referencia, por debajo de 50 KB carga casi instantáneamente y hasta unos 250 KB es razonable. Por encima conviene comprimir el archivo o convertirlo a WebP para no ralentizar la carga de la página.</p>
+    </details>
+
+    <details>
+      <summary>¿Puedo usarlo en el móvil o en una tablet?</summary>
+      <p>Sí. La interfaz es responsive, admite la selección táctil de archivos y los presets de 375 px y 768 px te dejan simular móvil y tablet directamente.</p>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <p>Todo se procesa en tu navegador: el archivo nunca se sube a ningún servidor.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

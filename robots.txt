@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vestefano.github.io/web_img_preview/sitemap.xml
