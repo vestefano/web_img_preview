@@ -31,17 +31,19 @@ const el = {
   resetMode: document.getElementById("resetMode"),
 };
 
-const MODES = {
-  article: "imagen dentro de un artículo",
-  avatar: "avatar / foto de perfil",
-  thumbs: "miniatura de galería",
-  banner: "banner / cabecera",
-  card: "tarjeta de artículo",
-  tiny: "icono de 48 px",
-  micro: "icono de 24 px",
+const MODE_KEYS = {
+  article: "modeArticle",
+  avatar: "modeAvatar",
+  thumbs: "modeThumbs",
+  banner: "modeBanner",
+  card: "modeCard",
+  tiny: "modeTiny",
+  micro: "modeMicro",
 };
 
-const state = { url: null, name: "", type: "", size: 0, w: 0, h: 0, ratio: 0, zoom: 1, alpha: null, svg: null, mode: "article" };
+const modeLabel = (mode) => t(MODE_KEYS[mode] || MODE_KEYS.article);
+
+const state = { url: null, name: "", type: "", size: 0, w: 0, h: 0, ratio: 0, zoom: 1, alpha: null, svg: null, mode: "article", errorKey: null };
 
 const fmtBytes = (b) => {
   if (b < 1024) return b + " B";
@@ -52,12 +54,14 @@ const fmtBytes = (b) => {
 const extOf = (name) => name.split(".").pop().toLowerCase();
 const isSvg = () => state.type === "image/svg+xml" || extOf(state.name) === "svg";
 
-function showError(text) {
-  el.error.textContent = text;
+function showError(key) {
+  state.errorKey = key;
+  el.error.textContent = t(key);
   el.error.hidden = false;
 }
 
 function clearError() {
+  state.errorKey = null;
   el.error.hidden = true;
 }
 
@@ -66,7 +70,7 @@ function load(file) {
   if (!file) return;
   const ext = extOf(file.name);
   if (!OK_EXT.includes(ext) || (file.type && !OK_TYPE.includes(file.type))) {
-    showError("Formato no válido. Solo se admiten archivos SVG, PNG o JPG / JPEG.");
+    showError("errFormat");
     return;
   }
 
@@ -90,7 +94,7 @@ function load(file) {
     state.alpha = hasAlpha(probe);
     paint();
   };
-  probe.onerror = () => showError("No se pudo leer la imagen. ¿Está dañada o no es un SVG/PNG/JPG válido?");
+  probe.onerror = () => showError("errRead");
   probe.src = state.url;
 }
 
@@ -147,7 +151,7 @@ async function parseSvg(file) {
 
 function paint() {
   el.img.src = state.url;
-  el.img.alt = "Vista previa de " + state.name;
+  el.img.alt = t("altPreview", { name: state.name });
   el.img.hidden = false;
   el.frameEmpty.hidden = true;
 
@@ -158,15 +162,15 @@ function paint() {
   el.fName.textContent = state.name;
 
   const rows = [
-    ["Tipo", state.type],
-    ["Peso", fmtBytes(state.size)],
-    ["Resolución", state.w && state.h ? state.w + " × " + state.h + (isSvg() ? " px (lienzo)" : " px") : "—"],
-    ["Relación", state.ratio ? (Math.round(state.ratio * 100) / 100) + " : 1" : "—"],
-    ["Formato", isSvg() ? "Vectorial (SVG)" : "Mapa de bits"],
-    ["Transparencia", state.alpha === null ? "no verificable" : state.alpha ? "sí (se verá el fondo)" : "no (opaca)"],
+    [t("lblType"), state.type],
+    [t("lblSize"), fmtBytes(state.size)],
+    [t("lblRes"), state.w && state.h ? state.w + " × " + state.h + (isSvg() ? t("valCanvas") : " px") : "—"],
+    [t("lblRatio"), state.ratio ? (Math.round(state.ratio * 100) / 100) + " : 1" : "—"],
+    [t("lblFormat"), isSvg() ? t("valVector") : t("valRaster")],
+    [t("lblAlpha"), state.alpha === null ? t("valAlphaUnknown") : state.alpha ? t("valAlphaYes") : t("valAlphaNo")],
   ];
   if (state.svg) {
-    rows.push(["viewBox", state.svg.viewBox || "— (sin viewBox)"]);
+    rows.push(["viewBox", state.svg.viewBox || t("valNoViewBox")]);
     rows.push(["width / height", (state.svg.width || "auto") + " / " + (state.svg.height || "auto")]);
   }
 
@@ -188,31 +192,32 @@ function escapeHtml(s) {
 function paintVerdicts() {
   const v = [];
   const needed = Number(el.vw.value) * state.zoom;
+  const screen = state.zoom > 1 ? t("onScreen", { zoom: state.zoom }) : "";
 
-  if (state.size < 50000) v.push(["ok", "✓", "Muy ligera (" + fmtBytes(state.size) + "): carga casi instantánea."]);
-  else if (state.size < 250000) v.push(["ok", "✓", "Peso razonable (" + fmtBytes(state.size) + ")."]);
-  else v.push(["warn", "!", "Pesada (" + fmtBytes(state.size) + "): conviene usar WebP o comprimir."]);
+  if (state.size < 50000) v.push(["ok", "✓", t("vSmall", { size: fmtBytes(state.size) })]);
+  else if (state.size < 250000) v.push(["ok", "✓", t("vMedium", { size: fmtBytes(state.size) })]);
+  else v.push(["warn", "!", t("vHeavy", { size: fmtBytes(state.size) })]);
 
   if (isSvg()) {
-    v.push(["ok", "✓", "Vectorial: se amplía sin perder nitidez, ideal para logos e iconos."]);
-    if (state.svg && state.svg.error) v.push(["warn", "!", "El XML del SVG tiene errores; algunos navegadores pueden fallar al mostrarlo."]);
-    else if (state.svg && !state.svg.viewBox) v.push(["warn", "!", "El SVG no tiene viewBox: escalarlo puede recortarse o deformarse."]);
-    if (state.svg && state.svg.autoSize) v.push(["warn", "!", "Sin width/height: el tamaño final depende del CSS (el navegador usa la proporción del viewBox y un ancho por defecto de ~300 px si no lo limitas)."]);
+    v.push(["ok", "✓", t("vVector")]);
+    if (state.svg && state.svg.error) v.push(["warn", "!", t("vSvgParse")]);
+    else if (state.svg && !state.svg.viewBox) v.push(["warn", "!", t("vNoViewBox")]);
+    if (state.svg && state.svg.autoSize) v.push(["warn", "!", t("vAutoSize")]);
   } else {
-    v.push(["warn", "!", "Mapa de bits: al ampliar por encima de " + state.w + " px se verá pixelada."]);
+    v.push(["warn", "!", t("vRaster", { w: state.w })]);
     if (state.w < needed) {
-      v.push(["bad", "✕", "A " + el.vw.value + " px" + (state.zoom > 1 ? " y pantalla " + state.zoom + "×" : "") + " necesita al menos " + Math.ceil(needed) + " px de ancho; este archivo tiene " + state.w + "."]);
+      v.push(["bad", "✕", t("vLowRes", { vw: el.vw.value, screen: screen, need: Math.ceil(needed), w: state.w })]);
     } else if (state.zoom > 1 && state.w < needed * 2) {
-      v.push(["warn", "!", "Se verá algo suave en pantalla " + state.zoom + "×: ideal sería " + Math.ceil(needed * 2) + " px de ancho."]);
+      v.push(["warn", "!", t("vSoft", { zoom: state.zoom, ideal: Math.ceil(needed * 2) })]);
     } else {
-      v.push(["ok", "✓", "Suficiente resolución para " + el.vw.value + " px en este tamaño."]);
+      v.push(["ok", "✓", t("vEnough", { vw: el.vw.value })]);
     }
   }
 
-  if (state.ratio > 3) v.push(["warn", "!", "Formato muy panorámico (" + (Math.round(state.ratio * 10) / 10) + ":1): a pantalla estrecha quedará muy bajo."]);
-  if (state.ratio && state.ratio < 0.45) v.push(["warn", "!", "Formato muy vertical: ocupa mucho scroll en móvil."]);
-  if (state.ratio === 1) v.push(["ok", "✓", "Proporción cuadrada: encaja bien en avatars, miniaturas e iconos."]);
-  if (state.alpha) v.push(["warn", "!", "Tiene transparencia: el resultado dependerá del color de fondo de tu web."]);
+  if (state.ratio > 3) v.push(["warn", "!", t("vPanoramic", { ratio: Math.round(state.ratio * 10) / 10 })]);
+  if (state.ratio && state.ratio < 0.45) v.push(["warn", "!", t("vVertical")]);
+  if (state.ratio === 1) v.push(["ok", "✓", t("vSquare")]);
+  if (state.alpha) v.push(["warn", "!", t("vAlpha")]);
 
   el.verdicts.innerHTML = v
     .map(([cls, ico, txt]) => `<div class="verdict ${cls}"><span class="ico">${ico}</span><span>${escapeHtml(txt)}</span></div>`)
@@ -257,7 +262,7 @@ function buildContexts() {
 }
 
 function setMode(mode) {
-  state.mode = MODES[mode] ? mode : "article";
+  state.mode = MODE_KEYS[mode] ? mode : "article";
   if (state.mode === "article") {
     delete el.figure.dataset.mode;
   } else {
@@ -269,15 +274,18 @@ function setMode(mode) {
     card.classList.toggle("is-active", card.dataset.use === state.mode && state.mode !== "article");
   });
   el.resetMode.hidden = state.mode === "article";
-  el.img.alt = "Vista previa de " + state.name + " — " + MODES[state.mode];
+  el.img.alt = t("altPreviewMode", { name: state.name, mode: modeLabel(state.mode) });
   updateNote();
   applyZoom();
 }
 
 function updateNote() {
-  const label = state.w ? state.w + "×" + state.h + " px" : "vectorial";
-  el.stageNote.textContent =
-    "Contenedor de " + el.vw.value + " px · imagen " + label + " · " + MODES[state.mode];
+  if (!state.name) {
+    el.stageNote.textContent = t("stageNoteDefault");
+    return;
+  }
+  const img = state.w ? state.w + "×" + state.h + " px" : t("vectorWord");
+  el.stageNote.textContent = t("stageNote", { w: el.vw.value, img: img, mode: modeLabel(state.mode) });
 }
 
 function applyZoom() {
@@ -383,5 +391,11 @@ el.optFit.addEventListener("change", () => {
 });
 
 window.addEventListener("resize", applyZoom);
+
+document.addEventListener("langchange", () => {
+  if (state.errorKey && !el.error.hidden) el.error.textContent = t(state.errorKey);
+  if (state.name) paint();
+  else updateNote();
+});
 
 applyZoom();
